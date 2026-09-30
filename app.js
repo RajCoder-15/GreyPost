@@ -85,8 +85,13 @@ app.post("/post", isLoggedIn, async (req,res) => {
 
 app.post("/register", async (req,res) => {
     let {email, password, name, username, age} = req.body;
-    let user = await userModel.findOne({email});
-    if(user) return res.status(500).send("user already registerd");
+    let user = await userModel.findOne({
+        $or: [
+            {email: email},
+            {username:username}
+        ]
+    });
+    if(user) return res.status(500).send("email or username already exist");
 
     bcrypt.genSalt(10, (err,salt)=>{
         bcrypt.hash(password, salt, async (err,hash)=>{
@@ -100,7 +105,7 @@ app.post("/register", async (req,res) => {
 
             let token = jwt.sign({email:email, userid: user._id}, process.env.JWT_SECRET);
             res.cookie("token", token);
-            res.send("registered");
+            res.redirect("/login");
         })
     })
 });
