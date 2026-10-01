@@ -43,8 +43,28 @@ app.get("/login",(req,res) => {
 
 app.get("/profile", isLoggedIn, async (req,res) => {
    let user = await userModel.findOne({email:req.user.email}).populate("posts");
-    res.render("profile", {user});
+   let currentUser = await userModel.findOne({_id: req.user.userid});
+    res.render("profile", {user, currentUser});
 })
+app.get("/profile/:username", isLoggedIn, async (req, res) => {
+
+    let user = await userModel
+        .findOne({ username: req.params.username })
+        .populate("posts");
+
+    let currentUser = await userModel.findOne({
+        _id: req.user.userid
+    });
+
+    if (!user) {
+        return res.status(404).send("User not found");
+    }
+
+    res.render("profile", {
+        user,
+        currentUser
+    });
+});
 
 app.get("/like/:id", isLoggedIn, async (req,res) => {
    let post = await postModel.findOne({_id: req.params.id}).populate("user");
@@ -143,6 +163,33 @@ function isLoggedIn(req,res,next){
     }
         
 }
+app.get("/follow/:id", isLoggedIn, async (req, res) => {
+
+    let currentUser = await userModel.findById(req.user.userid);
+    let userToFollow = await userModel.findById(req.params.id);
+
+    if (!userToFollow) {
+        return res.status(404).send("User not found");
+    }
+
+    if (currentUser._id.toString() === userToFollow._id.toString()) {
+        return res.status(400).send("You cannot follow yourself");
+    }
+
+    if (!currentUser.following.some(
+        id => id.toString() === userToFollow._id.toString()
+    )) {
+
+        currentUser.following.push(userToFollow._id);
+        userToFollow.followers.push(currentUser._id);
+
+        await currentUser.save();
+        await userToFollow.save();
+    }
+
+    res.redirect("/profile/" + userToFollow.username);
+});
+
 
 app.listen(3000);
 
