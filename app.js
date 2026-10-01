@@ -190,6 +190,24 @@ app.get("/follow/:id", isLoggedIn, async (req, res) => {
     res.redirect("/profile/" + userToFollow.username);
 });
 
+app.get("/unfollow/:id", isLoggedIn, async (req, res) => {
+
+    let currentUser = await userModel.findById(req.user.userid);
+    let userToUnfollow = await userModel.findById(req.params.id);
+
+    if (!userToUnfollow) {
+        return res.status(404).send("User not found");
+    }
+
+    currentUser.following.pull(userToUnfollow._id);
+    userToUnfollow.followers.pull(currentUser._id);
+
+    await currentUser.save();
+    await userToUnfollow.save();
+
+    res.redirect("/profile/" + userToUnfollow.username);
+});
+
 
 app.listen(3000);
 
