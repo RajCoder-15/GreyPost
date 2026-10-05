@@ -1,0 +1,206 @@
+import { useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import PostCard from "../Components/PostCard";
+
+function Profile() {
+
+    const navigate = useNavigate();
+
+    const [posts, setPosts] = useState([
+        {
+            id: 1,
+            username: "Raj",
+            image: "https://images.unsplash.com/photo-1500534623283-312aade485b7",
+            caption: "Exploring something new today 🚀"
+        },
+        {
+            id: 2,
+            username: "Raj",
+            image: "",
+            caption: "This is my second post on GreyPost."
+        }
+    ]);
+
+    const [editingPost, setEditingPost] = useState(null);
+    const [editCaption, setEditCaption] = useState("");
+
+    function deletePost(id) {
+        setPosts(posts.filter((post) => post.id !== id));
+    }
+
+    function startEdit(post) {
+        setEditingPost(post);
+        setEditCaption(post.caption);
+    }
+
+    function updatePost(e) {
+        e.preventDefault();
+
+        setPosts(
+            posts.map((post) =>
+                post.id === editingPost.id
+                    ? { ...post, caption: editCaption }
+                    : post
+            )
+        );
+
+        setEditingPost(null);
+        setEditCaption("");
+    }
+
+    return (
+        <div className="min-h-screen bg-zinc-900 text-white">
+
+            <div className="max-w-3xl mx-auto px-6 py-10">
+
+                <div className="flex items-center justify-between">
+
+                    <div className="flex items-center gap-6">
+
+                        <div className="w-24 h-24 rounded-full bg-zinc-700"></div>
+
+                        <div>
+                            <h1 className="text-2xl font-bold">
+                                Raj
+                            </h1>
+
+                            <p className="text-zinc-400">
+                                @raj
+                            </p>
+
+                            <p className="text-zinc-400 mt-2">
+                                Developer | Creator | Student
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <button
+                        onClick={() => navigate("/edit-profile")}
+                        className="px-5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700"
+                    >
+                        Edit Profile
+                    </button>
+
+                </div>
+
+                <div className="flex gap-10 mt-8 border-y border-zinc-800 py-5">
+
+                    <div>
+                        <p className="font-bold">{posts.length}</p>
+                        <p className="text-sm text-zinc-500">
+                            Posts
+                        </p>
+                    </div>
+
+                    <div>
+                        <p className="font-bold">120</p>
+                        <p className="text-sm text-zinc-500">
+                            Followers
+                        </p>
+                    </div>
+
+                    <div>
+                        <p className="font-bold">85</p>
+                        <p className="text-sm text-zinc-500">
+                            Following
+                        </p>
+                    </div>
+
+                </div>
+
+                <div className="mt-8">
+
+                    <h2 className="text-xl font-semibold mb-4">
+                        My Posts
+                    </h2>
+
+                    {posts.map((post) => (
+
+                        <div key={post.id}>
+
+                            <PostCard
+                                username={post.username}
+                                image={post.image}
+                                caption={post.caption}
+                            />
+
+                            <div className="flex gap-4 justify-end pb-4">
+
+                                <button
+                                    onClick={() => startEdit(post)}
+                                    className="flex items-center gap-2 text-zinc-400 hover:text-white"
+                                >
+                                    <Pencil size={18} />
+                                    Edit
+                                </button>
+
+                                <button
+                                    onClick={() => deletePost(post.id)}
+                                    className="flex items-center gap-2 text-red-400 hover:text-red-300"
+                                >
+                                    <Trash2 size={18} />
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    ))}
+
+                </div>
+
+            </div>
+
+            {editingPost && (
+
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center px-4">
+
+                    <div className="w-full max-w-lg bg-zinc-900 rounded-2xl p-6">
+
+                        <h2 className="text-xl font-semibold mb-6">
+                            Edit Post
+                        </h2>
+
+                        <form onSubmit={updatePost}>
+
+                            <textarea
+                                value={editCaption}
+                                onChange={(e) => setEditCaption(e.target.value)}
+                                className="w-full h-32 resize-none bg-zinc-800 text-white rounded-xl p-4 outline-none"
+                            />
+
+                            <div className="flex gap-3 mt-5">
+
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingPost(null)}
+                                    className="flex-1 py-3 rounded-xl bg-zinc-800"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className="flex-1 py-3 rounded-xl bg-white text-black font-semibold"
+                                >
+                                    Update
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
+        </div>
+    );
+}
+
+export default Profile;
