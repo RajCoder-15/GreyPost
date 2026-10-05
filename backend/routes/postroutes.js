@@ -1,14 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-const isLoggedIn = require("../middleware/auth.middleware");
+const isLoggedIn = require("../middleware/authmiddleware");
 
 const {
     createPost,
     likePost,
     editPost,
-    updatePost
-} = require("../controllers/post.controller");
+    updatePost,
+    getFeed
+} = require("../controllers/postcontroller");
 
 
 
@@ -41,6 +42,8 @@ router.post(
     isLoggedIn,
     updatePost
 );
+
+router.get("/getFeed", isLoggedIn, getFeed);
 
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const isLoggedIn = require("../middleware/auth.middleware");
+const isLoggedIn = require("../middleware/authmiddleware");
 
 const upload = require("../config/multerconfig");
 
@@ -12,7 +12,7 @@ const {
     uploadProfile,
     followUser,
     unfollowUser
-} = require("../controllers/user.controller");
+} = require("../controllers/usercontroller");
 
 
 

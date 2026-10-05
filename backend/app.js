@@ -8,9 +8,9 @@ const app = express();
 
 
 
-const authRoutes = require("./routes/auth.routes");
-const userRoutes = require("./routes/user.routes");
-const postRoutes = require("./routes/post.routes");
+const authRoutes = require("./routes/authroutes");
+const userRoutes = require("./routes/userroutes");
+const postRoutes = require("./routes/postroutes");
 
 
 

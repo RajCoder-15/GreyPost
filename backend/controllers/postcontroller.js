@@ -69,10 +69,26 @@ const updatePost = async (req, res) => {
     res.redirect("/profile");
 };
 
+const getFeed = async (req, res) => {
+    let user = await userModel.findById(req.user.userid);
+    let users = [
+        req.user.userid,
+        ...user.following
+    ];
+
+    let posts = await postModel.find({
+        user: { $in: users}
+    });
+    
+    res.json(posts);
+
+}
+
 
 module.exports = {
     createPost,
     likePost,
     editPost,
-    updatePost
+    updatePost,
+    getFeed
 };
