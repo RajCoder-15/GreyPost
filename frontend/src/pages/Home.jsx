@@ -1,7 +1,29 @@
 import Navbar from "../Components/Navbar";
 import PostCard from "../Components/PostCard";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
+
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function checkAuth(){
+            const response = await fetch("http://localhost:3000/me",{
+                credentials: "include"
+            });
+            console.log("AUTH STATUS:", response.status);
+
+            
+            if(!response.ok) {
+                navigate("/login");
+            }else{
+                setLoading(false);
+            }
+        }
+        checkAuth();
+    }, []);
 
     const posts = [
         {
@@ -23,6 +45,12 @@ function Home() {
             caption: "This is a text-only post."
         }
     ];
+
+    if (loading) {
+    return(
+         <div className="min-h-screen bg-zinc-900"></div>
+        );
+    }
 
     return (
         <div className="bg-zinc-900 min-h-screen text-white">
