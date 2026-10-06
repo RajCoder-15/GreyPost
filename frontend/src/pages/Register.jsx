@@ -10,19 +10,37 @@ function Register() {
     const [email, setEmail] = useState("");
     const [age, setAge] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
 
-        console.log({
-            name,
-            username,
-            email,
-            age,
-            password
-        });
+        const response = await fetch(
+            "http://localhost:3000/register",
+            {
+                method: "POST",
 
-        navigate("/login");
+                headers: {
+                "Content-Type": "application/json"
+                },
+
+                credentials: "include",
+
+                body: JSON.stringify({
+                    name,
+                    username,
+                    email,
+                    age,
+                    password
+                })
+            });
+           
+            if(response.ok) {
+                navigate("/");
+            }else {
+                const message = await response.text();
+                setError(message);
+            }
     }
 
     return (
@@ -79,6 +97,12 @@ function Register() {
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full bg-zinc-900 rounded-xl px-4 py-3 outline-none"
                     />
+
+                    {error && (
+                        <p className="text-red-400 text-sm">
+                        {error}
+                        </p>
+                    )}
 
                     <button
                         type="submit"

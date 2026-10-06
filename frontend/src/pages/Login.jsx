@@ -7,16 +7,33 @@ function Login() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
 
-        console.log({
-            email,
-            password
+        const response = await fetch("http://localhost:3000/login",
+        {
+            method: "POST",
+
+            headers:{
+                "Content-Type": "application/json"
+            },
+
+            credentials: "include",
+
+            body: JSON.stringify({
+                email,
+                password
+            })
         });
 
-        navigate("/");
+        if(response.ok) {
+                navigate("/");
+            }else {
+                const message = await response.text();
+                setError(message);
+            }
     }
 
     return (
@@ -24,9 +41,6 @@ function Login() {
 
             <div className="w-full max-w-md bg-zinc-800 rounded-2xl p-8">
 
-                <h1 className="text-2xl font-bold">
-                    Welcome Back
-                </h1>
 
                 <p className="text-zinc-400 mt-2 mb-6">
                     Login to your GreyPost account

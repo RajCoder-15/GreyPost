@@ -10,6 +10,21 @@ function Navbar() {
 
     const navigate = useNavigate();
 
+    async function handleLogout() {
+    const response = await fetch(
+        "http://localhost:3000/logout",
+        {
+            method: "GET",
+            credentials: "include"
+        }
+    );
+
+    if (response.ok) {
+        navigate("/login");
+    }
+}
+
+
     return (
         <>
             <nav className="w-full flex items-center justify-between px-8 py-4">
@@ -38,6 +53,10 @@ function Navbar() {
                         className="text-white"
                     >
                         Profile
+                    </button>
+
+                    <button onClick={handleLogout}>
+                        Logout
                     </button>
 
                 </div>

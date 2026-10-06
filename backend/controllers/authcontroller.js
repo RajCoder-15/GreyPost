@@ -40,7 +40,11 @@ const register = async (req, res) => {
 
             res.cookie("token", token);
 
-            res.redirect("/login");
+            res.status(201).json({
+                message: "Registration successful"
+            });
+            
+            
         });
     });
 };
@@ -53,7 +57,7 @@ const login = async (req, res) => {
     let user = await userModel.findOne({ email });
 
     if (!user) {
-        return res.status(500).send("email or password is incorrect");
+        return res.status(401).send("email or password is incorrect");
     }
 
     bcrypt.compare(password, user.password, (err, result) => {
@@ -70,10 +74,12 @@ const login = async (req, res) => {
 
             res.cookie("token", token);
 
-            res.status(200).redirect("/profile");
+            res.status(200).json({
+                message: "Login successful"
+            });
 
         } else {
-            res.redirect("/login");
+            res.status(401).send("email or password is incorrect");
         }
     });
 };
@@ -83,7 +89,9 @@ const logout = (req, res) => {
 
     res.cookie("token", "");
 
-    res.redirect("/login");
+    res.status(200).json({
+        message: "Logout successful"
+    });
 };
 
 
