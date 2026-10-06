@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const isLoggedIn = require("../middleware/authmiddleware");
 
 const {
     register,
@@ -17,6 +18,10 @@ router.post("/register", register);
 router.post("/login", login);
 
 router.get("/logout", logout);
+
+router.get("/me", isLoggedIn, (req,res)=>{
+    res.status(200).json(req.user);
+})
 
 
 module.exports = router;

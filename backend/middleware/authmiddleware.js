@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 function isLoggedIn(req, res, next) {
 
     if (!req.cookies.token) {
-        return res.redirect("/login");
+        return res.status(401).json("you should login first");
     }
 
     try {
@@ -21,7 +21,8 @@ function isLoggedIn(req, res, next) {
 
         res.cookie("token", "");
 
-        return res.redirect("/login");
+        res.status(401).json("you should login first");
+        
     }
 }
 
