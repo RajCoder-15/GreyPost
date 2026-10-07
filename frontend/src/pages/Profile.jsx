@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PostCard from "../Components/PostCard";
@@ -6,6 +6,29 @@ import PostCard from "../Components/PostCard";
 function Profile() {
 
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState(null);
+    
+    useEffect(() =>{
+        async function checkAuth(){
+            const response = await fetch("http://localhost:3000/me",{
+                credentials: "include"
+            })
+            if(!response.ok){
+                navigate("/login");
+            }else{
+                
+                const profileResponse = await fetch("http://localhost:3000/profile", {
+                    credentials : "include",
+                })
+                const data = await profileResponse.json();
+                console.log(data);
+                setProfile(data);
+                setLoading(false);
+            }
+        }
+        checkAuth();
+    },[])
 
     const [posts, setPosts] = useState([
         {
@@ -25,8 +48,22 @@ function Profile() {
     const [editingPost, setEditingPost] = useState(null);
     const [editCaption, setEditCaption] = useState("");
 
-    function deletePost(id) {
-        setPosts(posts.filter((post) => post.id !== id));
+    async function deletePost(id) {
+        const response = await fetch(`http://localhost:3000/delete/${id}`,{
+            method: "DELETE",
+            credentials:"include"
+        })
+        if(response.ok){
+            setProfile({
+                ...profile,
+                user: {
+                    ...profile.user,
+                    posts: profile.user.posts.filter(
+                        (post) => post._id !== id
+                    )
+                }
+            });
+        }
     }
 
     function startEdit(post) {
@@ -49,6 +86,12 @@ function Profile() {
         setEditCaption("");
     }
 
+    if (loading) {
+        return(
+            <div className="min-h-screen bg-zinc-900"></div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-zinc-900 text-white">
 
@@ -62,11 +105,11 @@ function Profile() {
 
                         <div>
                             <h1 className="text-2xl font-bold">
-                                Raj
+                                {profile.user.name}
                             </h1>
 
                             <p className="text-zinc-400">
-                                @raj
+                                @{profile.user.username}
                             </p>
 
                             <p className="text-zinc-400 mt-2">
@@ -95,14 +138,14 @@ function Profile() {
                     </div>
 
                     <div>
-                        <p className="font-bold">120</p>
+                        <p className="font-bold">{profile.user.followers.length}</p>
                         <p className="text-sm text-zinc-500">
                             Followers
                         </p>
                     </div>
 
                     <div>
-                        <p className="font-bold">85</p>
+                        <p className="font-bold">{profile.user.following.length}</p>
                         <p className="text-sm text-zinc-500">
                             Following
                         </p>
@@ -116,14 +159,13 @@ function Profile() {
                         My Posts
                     </h2>
 
-                    {posts.map((post) => (
+                    {profile.user.posts.map((post) => (
 
                         <div key={post.id}>
 
                             <PostCard
-                                username={post.username}
-                                image={post.image}
-                                caption={post.caption}
+                                username={post.user.username}
+                                caption={post.content}
                             />
 
                             <div className="flex gap-4 justify-end pb-4">
@@ -137,7 +179,7 @@ function Profile() {
                                 </button>
 
                                 <button
-                                    onClick={() => deletePost(post.id)}
+                                    onClick={() => deletePost(post._id)}
                                     className="flex items-center gap-2 text-red-400 hover:text-red-300"
                                 >
                                     <Trash2 size={18} />

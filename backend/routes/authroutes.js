@@ -19,6 +19,8 @@ router.post("/login", login);
 
 router.get("/logout", logout);
 
+
+
 router.get("/me", isLoggedIn, (req,res)=>{
     res.status(200).json(req.user);
 })

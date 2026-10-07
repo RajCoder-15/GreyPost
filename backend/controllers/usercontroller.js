@@ -4,14 +4,20 @@ const userModel = require("../models/user");
 const getProfile = async (req, res) => {
 
     let user = await userModel
-        .findOne({ email: req.user.email })
-        .populate("posts");
+        .findOne({ email: req.user.email }).select("-password")
+        .populate({
+            path: "posts",
+            populate:{
+                path: "user",
+                select: "-password"
+            }
+        })
 
     let currentUser = await userModel.findOne({
         _id: req.user.userid
-    });
+    }).select("-password");
 
-    res.render("profile", {
+    res.status(200).json({
         user,
         currentUser
     });

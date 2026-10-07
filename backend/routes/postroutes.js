@@ -8,6 +8,7 @@ const {
     likePost,
     editPost,
     updatePost,
+    deletePost,
     getFeed
 } = require("../controllers/postcontroller");
 
@@ -43,6 +44,7 @@ router.post(
     updatePost
 );
 
+router.delete("/delete/:id", isLoggedIn, deletePost);
 router.get("/getFeed", isLoggedIn, getFeed);
 
 

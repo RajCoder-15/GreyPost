@@ -69,6 +69,24 @@ const updatePost = async (req, res) => {
     res.redirect("/profile");
 };
 
+const deletePost = async(req, res) => {
+    await postModel.findOneAndDelete(
+        {_id: req.params.id},
+    )
+    await userModel.findOneAndUpdate(
+        {_id:req.params.id},
+        {
+            $pull: {
+                posts: req.user.userid
+            }
+        }
+    )
+    res.status(200).json({
+        message: "Post deleted successfully"
+    });
+
+}
+
 const getFeed = async (req, res) => {
     let user = await userModel.findById(req.user.userid);
     let users = [
@@ -90,5 +108,6 @@ module.exports = {
     likePost,
     editPost,
     updatePost,
+    deletePost,
     getFeed
 };

@@ -13,8 +13,6 @@ function Home() {
             const response = await fetch("http://localhost:3000/me",{
                 credentials: "include"
             });
-            console.log("AUTH STATUS:", response.status);
-
             
             if(!response.ok) {
                 navigate("/login");
