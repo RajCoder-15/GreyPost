@@ -6,13 +6,10 @@ const isLoggedIn = require("../middleware/authmiddleware");
 const {
     createPost,
     likePost,
-    editPost,
     updatePost,
     deletePost,
     getFeed
 } = require("../controllers/postcontroller");
-
-
 
 router.post(
     "/post",
@@ -20,25 +17,13 @@ router.post(
     createPost
 );
 
-
-
 router.get(
     "/like/:id",
     isLoggedIn,
     likePost
 );
 
-
-
-router.get(
-    "/edit/:id",
-    isLoggedIn,
-    editPost
-);
-
-
-
-router.post(
+router.put(
     "/update/:id",
     isLoggedIn,
     updatePost

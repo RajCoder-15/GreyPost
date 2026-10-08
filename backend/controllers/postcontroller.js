@@ -45,18 +45,6 @@ const likePost = async (req, res) => {
     res.redirect("/profile");
 };
 
-
-const editPost = async (req, res) => {
-
-    let post = await postModel
-        .findOne({ _id: req.params.id })
-        .populate("user");
-
-    res.render("edit", { post });
-};
-
-
-
 const updatePost = async (req, res) => {
 
     await postModel.findOneAndUpdate(
@@ -66,7 +54,9 @@ const updatePost = async (req, res) => {
         }
     );
 
-    res.redirect("/profile");
+    res.status(200).json({
+        message: "Post updated successfully"
+    });
 };
 
 const deletePost = async(req, res) => {
@@ -106,7 +96,6 @@ const getFeed = async (req, res) => {
 module.exports = {
     createPost,
     likePost,
-    editPost,
     updatePost,
     deletePost,
     getFeed

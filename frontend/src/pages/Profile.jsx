@@ -68,19 +68,38 @@ function Profile() {
 
     function startEdit(post) {
         setEditingPost(post);
-        setEditCaption(post.caption);
+        setEditCaption(post.content);
     }
 
-    function updatePost(e) {
+   async function updatePost(e) {
         e.preventDefault();
 
-        setPosts(
-            posts.map((post) =>
-                post.id === editingPost.id
-                    ? { ...post, caption: editCaption }
-                    : post
-            )
-        );
+        const response = await fetch(`http://localhost:3000/update/${editingPost._id}`,{
+            method: "PUT",
+            credentials: "include",
+            headers:{
+                "Content-Type": "application/json"
+            },
+            body:JSON.stringify({
+                content:editCaption
+            })
+        })
+
+        if (response.ok) {
+            setProfile({
+                ...profile,
+                user: {
+                    ...profile.user,
+                    posts: profile.user.posts.map((post) =>
+                        post._id === editingPost._id
+                        ? { ...post, content: editCaption }
+                        : post
+                    )
+                }
+            });
+        }    
+
+        
 
         setEditingPost(null);
         setEditCaption("");
