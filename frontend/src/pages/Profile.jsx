@@ -180,11 +180,13 @@ function Profile() {
 
                     {profile.user.posts.map((post) => (
 
-                        <div key={post.id}>
+                        <div key={post._id}>
 
                             <PostCard
                                 username={post.user.username}
+                                userId = {post.user._id}
                                 caption={post.content}
+                                currentUserId ={profile.currentUser._id}
                             />
 
                             <div className="flex gap-4 justify-end pb-4">

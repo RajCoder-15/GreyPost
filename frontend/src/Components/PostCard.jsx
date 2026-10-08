@@ -5,7 +5,7 @@ import {
     UserPlus
 } from "lucide-react";
 
-function PostCard({ username, image, caption }) {
+function PostCard({ username,userId,currentUserId, image, caption }) {
 
     const [liked, setLiked] = useState(false);
     const [following, setFollowing] = useState(false);
@@ -32,7 +32,8 @@ function PostCard({ username, image, caption }) {
 
                 </div>
 
-                <button
+                {userId !== currentUserId && (
+                     <button
                     onClick={() => setFollowing(!following)}
                     className={`flex items-center gap-1 text-sm ${
                         following
@@ -44,6 +45,9 @@ function PostCard({ username, image, caption }) {
 
                     {following ? "Following" : "Follow"}
                 </button>
+                )}
+
+               
 
             </div>
 
