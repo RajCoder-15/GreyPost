@@ -11,10 +11,17 @@ const {
     profileUploadPage,
     uploadProfile,
     followUser,
-    unfollowUser
+    unfollowUser,
+    searchUsers
 } = require("../controllers/usercontroller");
 
 
+
+router.get(
+    "/search",
+    isLoggedIn,
+    searchUsers
+);
 
 router.get(
     "/profile",

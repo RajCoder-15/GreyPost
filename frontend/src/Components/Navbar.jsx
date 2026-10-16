@@ -42,7 +42,6 @@ function Navbar({ onPostCreated }) {
                         aria-label="Create post"
                     >
                         <Plus size={20} />
-                        Create
                     </button>
 
                     <button

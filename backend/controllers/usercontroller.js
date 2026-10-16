@@ -54,6 +54,37 @@ const getUserProfile = async (req, res) => {
     });
 };
 
+const searchUsers = async (req, res) => {
+    try {
+        const query = req.query.q?.trim();
+
+        if (!query) {
+            return res.status(400).json({
+                message: "Search query is required"
+            });
+        }
+
+        const users = await userModel
+            .find({
+                $or: [
+                    { username: { $regex: query, $options: "i" } },
+                    { name: { $regex: query, $options: "i" } }
+                ]
+            })
+            .select("username name profilepic")
+            .limit(10);
+
+        return res.status(200).json({ users });
+
+    } catch (error) {
+        console.error("Search users error:", error);
+
+        return res.status(500).json({
+            message: "Failed to search users"
+        });
+    }
+};
+
 
 
 const profileUploadPage = (req, res) => {
@@ -149,5 +180,6 @@ module.exports = {
     profileUploadPage,
     uploadProfile,
     followUser,
-    unfollowUser
+    unfollowUser,
+    searchUsers
 };
