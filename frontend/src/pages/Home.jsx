@@ -1,73 +1,116 @@
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import PostCard from "../Components/PostCard";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 function Home() {
-
     const navigate = useNavigate();
+
+    const [posts, setPosts] = useState([]);
+    const [currentUserId, setCurrentUserId] = useState("");
+    const [followingIds, setFollowingIds] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const fetchFeed = useCallback(async () => {
+        try {
+            setError("");
+
+            const response = await fetch(
+                "http://localhost:3000/getFeed",
+                {
+                    method: "GET",
+                    credentials: "include"
+                }
+            );
+
+            if (response.status === 401) {
+                navigate("/login");
+                return;
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Failed to load feed"
+                );
+            }
+
+            setPosts(data.posts || []);
+            setCurrentUserId(String(data.currentUserId));
+            setFollowingIds(
+                (data.following || []).map(id => String(id))
+            );
+
+        } catch (err) {
+            setError(err.message || "Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    }, [navigate]);
 
     useEffect(() => {
-        async function checkAuth(){
-            const response = await fetch("http://localhost:3000/me",{
-                credentials: "include"
-            });
-            
-            if(!response.ok) {
-                navigate("/login");
-            }else{
-                setLoading(false);
-            }
-        }
-        checkAuth();
-    }, []);
-
-    const posts = [
-        {
-            id: 1,
-            username: "Raj",
-            image: "https://images.unsplash.com/photo-1500534623283-312aade485b7",
-            caption: "Exploring something new today 🚀"
-        },
-        {
-            id: 2,
-            username: "Aman",
-            image: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e",
-            caption: "Beautiful day!"
-        },
-        {
-            id: 3,
-            username: "Rahul",
-            image: "",
-            caption: "This is a text-only post."
-        }
-    ];
+        fetchFeed();
+    }, [fetchFeed]);
 
     if (loading) {
-    return(
-         <div className="min-h-screen bg-zinc-900"></div>
+        return (
+            <div className="min-h-screen bg-zinc-900 text-white flex items-center justify-center">
+                Loading GreyPost...
+            </div>
         );
     }
 
     return (
-        <div className="bg-zinc-900 min-h-screen text-white">
+        <div className="min-h-screen bg-zinc-900 text-white">
+            <Navbar onPostCreated={fetchFeed} />
 
-            <Navbar />
+            <main className="py-8 px-4">
+                {error && (
+                    <p className="text-center text-red-400">
+                        {error}
+                    </p>
+                )}
 
-            <main className="py-8">
+                {!error && posts.length === 0 && (
+                    <p className="text-center text-zinc-400">
+                        No posts yet. Create a post or follow someone!
+                    </p>
+                )}
 
-                {posts.map((post) => (
-                    <PostCard
-                        key={post.id}
-                        username={post.username}
-                        image={post.image}
-                        caption={post.caption}
-                    />
-                ))}
+                <div className="flex flex-col items-center gap-6">
+                    {posts.map(post => {
+                        const authorId = String(
+                            post.user?._id || ""
+                        );
 
+                        return (
+                            <PostCard
+                                key={post._id}
+                                postId={post._id}
+                                username={
+                                    post.user?.username ||
+                                    post.user?.name ||
+                                    "Unknown User"
+                                }
+                                userId={authorId}
+                                currentUserId={currentUserId}
+                                image={
+                                    post.image
+                                        ? `http://localhost:3000${post.image}`
+                                        : ""
+                                }
+                                caption={post.content}
+                                likes={post.likes || []}
+                                isFollowing={followingIds.includes(
+                                    authorId
+                                )}
+                            />
+                        );
+                    })}
+                </div>
             </main>
-
         </div>
     );
 }

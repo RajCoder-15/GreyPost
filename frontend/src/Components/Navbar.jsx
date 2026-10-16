@@ -1,34 +1,31 @@
+
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import CreatePostModal from "./CreatePostModal";
 
-function Navbar() {
-
+function Navbar({ onPostCreated }) {
     const [showModal, setShowModal] = useState(false);
-
     const navigate = useNavigate();
 
     async function handleLogout() {
-    const response = await fetch(
-        "http://localhost:3000/logout",
-        {
-            method: "GET",
-            credentials: "include"
+        const response = await fetch(
+            "http://localhost:3000/logout",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        if (response.ok) {
+            navigate("/login");
         }
-    );
-
-    if (response.ok) {
-        navigate("/login");
     }
-}
-
 
     return (
         <>
-            <nav className="w-full flex items-center justify-between px-8 py-4">
-
+            <nav className="flex w-full items-center justify-between px-8 py-4">
                 <button
                     onClick={() => navigate("/")}
                     className="text-2xl font-bold"
@@ -39,13 +36,13 @@ function Navbar() {
                 <SearchBar />
 
                 <div className="flex items-center gap-6">
-
                     <button
                         onClick={() => setShowModal(true)}
                         className="flex items-center gap-2 text-white"
+                        aria-label="Create post"
                     >
                         <Plus size={20} />
-                       
+                        Create
                     </button>
 
                     <button
@@ -58,17 +55,15 @@ function Navbar() {
                     <button onClick={handleLogout}>
                         Logout
                     </button>
-
                 </div>
-
             </nav>
 
             {showModal && (
                 <CreatePostModal
                     onClose={() => setShowModal(false)}
+                    onPostCreated={onPostCreated}
                 />
             )}
-
         </>
     );
 }

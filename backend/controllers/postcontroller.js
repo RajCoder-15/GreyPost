@@ -120,19 +120,41 @@ const deletePost = async(req, res) => {
 }
 
 const getFeed = async (req, res) => {
-    let user = await userModel.findById(req.user.userid);
-    let users = [
-        req.user.userid,
-        ...user.following
-    ];
+    try {
+        const currentUser = await userModel
+            .findById(req.user.userid)
+            .select("-password");
 
-    let posts = await postModel.find({
-        user: { $in: users}
-    });
-    
-    res.json(posts);
+        if (!currentUser) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
 
-}
+        const userIds = [
+            currentUser._id,
+            ...currentUser.following
+        ];
+
+        const posts = await postModel
+            .find({ user: { $in: userIds } })
+            .populate("user", "username name profilepic")
+            .sort({ date: -1 });
+
+        return res.status(200).json({
+            posts,
+            currentUserId: currentUser._id,
+            following: currentUser.following
+        });
+
+    } catch (error) {
+        console.error("Get feed error:", error);
+
+        return res.status(500).json({
+            message: "Failed to load feed"
+        });
+    }
+};
 
 
 module.exports = {
