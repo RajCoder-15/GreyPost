@@ -5,10 +5,10 @@ import {
     UserPlus
 } from "lucide-react";
 
-function PostCard({ username,userId,currentUserId, image, caption }) {
+function PostCard({ username,userId,currentUserId, image, caption, isFollowing: initialFollowing }) {
 
     const [liked, setLiked] = useState(false);
-    const [following, setFollowing] = useState(false);
+    const [following, setFollowing] = useState(initialFollowing);
 
     async function toggleFollow() {
     const endpoint = following ? "unfollow" : "follow";

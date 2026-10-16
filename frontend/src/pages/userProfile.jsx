@@ -62,6 +62,10 @@ function UserProfile() {
 
     const user = profile.user;
 
+    const isFollowing = profile.currentUser.following.some(
+        (id) => id.toString() === user._id
+    );
+
     return (
         <main className="min-h-screen bg-zinc-950 text-white px-4 py-8">
             <section className="max-w-3xl mx-auto">
@@ -109,6 +113,7 @@ function UserProfile() {
                                 currentUserId={profile.currentUser._id}
                                 image={post.image}
                                 caption={post.content}
+                                isFollowing={isFollowing}
                             />
                         ))
                     ) : (
