@@ -2,24 +2,49 @@ const postModel = require("../models/post");
 const userModel = require("../models/user");
 
 
+
 const createPost = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.user.userid);
 
-    let user = await userModel.findOne({
-        email: req.user.email
-    });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
 
-    let { content } = req.body;
+        const content = req.body.content?.trim() || "";
 
-    let post = await postModel.create({
-        user: user._id,
-        content
-    });
+        if (!content && !req.file) {
+            return res.status(400).json({
+                message: "Please add a caption or image"
+            });
+        }
 
-    user.posts.push(post._id);
+        const image = req.file
+            ? `/images/${req.file.filename}`
+            : "";
 
-    await user.save();
+        const post = await postModel.create({
+            user: user._id,
+            content,
+            image
+        });
 
-    res.redirect("/profile");
+        user.posts.push(post._id);
+        await user.save();
+
+        return res.status(201).json({
+            message: "Post created successfully",
+            post
+        });
+    } catch (error) {
+        console.error("Create post error:", error);
+
+        return res.status(500).json({
+            message: "Failed to create post"
+        });
+    }
 };
 
 

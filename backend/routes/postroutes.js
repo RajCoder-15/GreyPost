@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const isLoggedIn = require("../middleware/authmiddleware");
+const upload = require("../middleware/uploadmiddleware");
 
 const {
     createPost,
@@ -14,6 +15,7 @@ const {
 router.post(
     "/post",
     isLoggedIn,
+    upload.single("image"),
     createPost
 );
 
