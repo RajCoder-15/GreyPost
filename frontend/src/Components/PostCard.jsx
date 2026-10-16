@@ -10,6 +10,28 @@ function PostCard({ username,userId,currentUserId, image, caption }) {
     const [liked, setLiked] = useState(false);
     const [following, setFollowing] = useState(false);
 
+    async function toggleFollow() {
+    const endpoint = following ? "unfollow" : "follow";
+
+    try {
+        const response = await fetch(
+            `http://localhost:3000/${endpoint}/${userId}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        if (response.ok) {
+            setFollowing(!following);
+        } else {
+            console.log("Failed to update follow status");
+        }
+    } catch (error) {
+        console.log("Follow request failed", error);
+    }
+}
+
     return (
         <article className="w-full max-w-xl mx-auto py-6 border-b border-zinc-700">
 
@@ -34,7 +56,7 @@ function PostCard({ username,userId,currentUserId, image, caption }) {
 
                 {userId !== currentUserId && (
                      <button
-                    onClick={() => setFollowing(!following)}
+                    onClick={toggleFollow}
                     className={`flex items-center gap-1 text-sm ${
                         following
                             ? "text-zinc-400"
