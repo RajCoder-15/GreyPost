@@ -22,28 +22,45 @@ const createPost = async (req, res) => {
     res.redirect("/profile");
 };
 
+
 const likePost = async (req, res) => {
+    try {
+        const post = await postModel.findById(req.params.id);
 
-    let post = await postModel
-        .findOne({ _id: req.params.id })
-        .populate("user");
+        if (!post) {
+            return res.status(404).json({
+                message: "Post not found"
+            });
+        }
 
-    if (post.likes.indexOf(req.user.userid) === -1) {
+        const userId = req.user.userid.toString();
 
-        post.likes.push(req.user.userid);
-
-    } else {
-
-        post.likes.splice(
-            post.likes.indexOf(req.user.userid),
-            1
+        const alreadyLiked = post.likes.some(
+            (id) => id.toString() === userId
         );
+
+        if (alreadyLiked) {
+            post.likes.pull(userId);
+        } else {
+            post.likes.push(userId);
+        }
+
+        await post.save();
+
+        return res.status(200).json({
+            message: alreadyLiked
+                ? "Post unliked successfully"
+                : "Post liked successfully",
+            likes: post.likes,
+            liked: !alreadyLiked
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Failed to update like"
+        });
     }
-
-    await post.save();
-
-    res.redirect("/profile");
 };
+
 
 const updatePost = async (req, res) => {
 

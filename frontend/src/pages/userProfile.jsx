@@ -239,11 +239,13 @@ function UserProfile() {
                         user.posts.map((post) => (
                             <PostCard
                                 key={post._id}
+                                postId={post._id}
                                 username={user.username}
                                 userId={user._id}
                                 currentUserId={currentUser._id}
                                 image={post.image}
                                 caption={post.content}
+                                likes={post.likes}
                                 isFollowing={following}
                             />
                         ))
