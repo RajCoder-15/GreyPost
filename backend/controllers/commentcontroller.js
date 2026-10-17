@@ -83,4 +83,45 @@ const getComments = async (req, res) => {
     }
 };
 
-module.exports = { createComment, getComments };
+
+const deleteComment = async (req, res) => {
+    try {
+        const commentId = req.params.commentId;
+        const userId = req.user.userid;
+
+        const comment = await commentModel.findById(commentId);
+
+        if (!comment) {
+            return res.status(404).json({
+                message: "Comment not found"
+            });
+        }
+
+        if (comment.user.toString() !== userId.toString()) {
+            return res.status(403).json({
+                message: "You can only delete your own comments"
+            });
+        }
+
+        await commentModel.findByIdAndDelete(commentId);
+
+        return res.status(200).json({
+            message: "Comment deleted successfully"
+        });
+
+    } catch (error) {
+        console.error("Delete comment error:", error);
+
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                message: "Invalid comment ID"
+            });
+        }
+
+        return res.status(500).json({
+            message: "Failed to delete comment"
+        });
+    }
+};
+
+module.exports = { createComment, getComments, deleteComment };

@@ -4,7 +4,8 @@ import {
     Heart,
     MessageCircle,
     UserPlus,
-    Send
+    Send,
+    Trash2
 } from "lucide-react";
 
 function PostCard({
@@ -27,12 +28,13 @@ function PostCard({
     const [commentText, setCommentText] = useState("");
     const [commentsLoading, setCommentsLoading] = useState(false);
     const [commentSubmitting, setCommentSubmitting] = useState(false);
+    const [deletingCommentId, setDeletingCommentId] = useState(null);
     const [commentError, setCommentError] = useState("");
 
     useEffect(() => {
         setLiked(
             initialLikes.some(
-                (id) => id.toString() === currentUserId?.toString()
+                (id) => String(id?._id || id) === String(currentUserId)
             )
         );
         setLikesCount(initialLikes.length);
@@ -54,11 +56,11 @@ function PostCard({
                 }
             );
 
-            if (response.ok) {
-                setFollowing(!following);
-            } else {
-                console.error("Failed to update follow status");
+            if (!response.ok) {
+                throw new Error("Failed to update follow status");
             }
+
+            setFollowing(!following);
         } catch (error) {
             console.error("Follow request failed:", error);
         }
@@ -78,11 +80,11 @@ function PostCard({
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("Failed to update like");
-            }
-
             const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to update like");
+            }
 
             setLiked(data.liked);
             setLikesCount(data.likes.length);
@@ -100,7 +102,9 @@ function PostCard({
         try {
             const response = await fetch(
                 `http://localhost:3000/comments/${postId}`,
-                { credentials: "include" }
+                {
+                    credentials: "include"
+                }
             );
 
             const data = await response.json();
@@ -167,6 +171,47 @@ function PostCard({
         }
     }
 
+    async function handleDeleteComment(commentId) {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this comment?"
+        );
+
+        if (!confirmed || deletingCommentId) return;
+
+        setDeletingCommentId(commentId);
+        setCommentError("");
+
+        try {
+            const response = await fetch(
+                `http://localhost:3000/comments/item/${commentId}`,
+                {
+                    method: "DELETE",
+                    credentials: "include"
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Failed to delete comment"
+                );
+            }
+
+            setComments((previousComments) =>
+                previousComments.filter(
+                    (comment) => comment._id !== commentId
+                )
+            );
+        } catch (error) {
+            setCommentError(
+                error.message || "Failed to delete comment"
+            );
+        } finally {
+            setDeletingCommentId(null);
+        }
+    }
+
     return (
         <article className="mx-auto w-full max-w-xl border-b border-zinc-700 py-6">
             <div className="mb-4 flex items-center justify-between">
@@ -181,7 +226,7 @@ function PostCard({
                     </div>
                 </div>
 
-                {userId?.toString() !== currentUserId?.toString() && (
+                {String(userId) !== String(currentUserId) && (
                     <button
                         onClick={toggleFollow}
                         className={`flex items-center gap-1 text-sm ${
@@ -271,36 +316,69 @@ function PostCard({
                         </p>
                     ) : (
                         <div className="mt-4 space-y-4">
-                            {comments.map((comment) => (
-                                <div
-                                    key={comment._id}
-                                    className="flex items-start gap-3"
-                                >
-                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-700 text-sm">
-                                        {(comment.user?.username || "U")
-                                            .charAt(0)
-                                            .toUpperCase()}
+                            {comments.map((comment) => {
+                                const commentUserId =
+                                    comment.user?._id || comment.user;
+
+                                const isCommentAuthor =
+                                    String(commentUserId) ===
+                                    String(currentUserId);
+
+                                return (
+                                    <div
+                                        key={comment._id}
+                                        className="flex items-start gap-3"
+                                    >
+                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-700 text-sm">
+                                            {(comment.user?.username || "U")
+                                                .charAt(0)
+                                                .toUpperCase()}
+                                        </div>
+
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-semibold">
+                                                {comment.user?.username ||
+                                                    comment.user?.name ||
+                                                    "User"}
+                                            </p>
+
+                                            <p className="break-words text-sm text-zinc-300">
+                                                {comment.content}
+                                            </p>
+
+                                            <p className="mt-1 text-xs text-zinc-500">
+                                                {comment.date
+                                                    ? new Date(
+                                                          comment.date
+                                                      ).toLocaleString()
+                                                    : ""}
+                                            </p>
+
+                                            {isCommentAuthor && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleDeleteComment(
+                                                            comment._id
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        deletingCommentId ===
+                                                        comment._id
+                                                    }
+                                                    className="mt-2 flex items-center gap-1 text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
+                                                >
+                                                    <Trash2 size={14} />
+                                                    {deletingCommentId ===
+                                                    comment._id
+                                                        ? "Deleting..."
+                                                        : "Delete"}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold">
-                                            {comment.user?.username ||
-                                                comment.user?.name ||
-                                                "User"}
-                                        </p>
-
-                                        <p className="break-words text-sm text-zinc-300">
-                                            {comment.content}
-                                        </p>
-
-                                        <p className="mt-1 text-xs text-zinc-500">
-                                            {comment.date
-                                                ? new Date(comment.date).toLocaleString()
-                                                : ""}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </section>
