@@ -174,6 +174,90 @@ const unfollowUser = async (req, res) => {
 };
 
 
+const updateProfile = async (req, res) => {
+    try {
+        const { name, username, bio } = req.body;
+
+        if (
+            typeof name !== "string" ||
+            typeof username !== "string" ||
+            typeof bio !== "string"
+        ) {
+            return res.status(400).json({
+                message: "Name, username and bio are required"
+            });
+        }
+
+        const cleanName = name.trim();
+        const cleanUsername = username.trim();
+        const cleanBio = bio.trim();
+
+        if (!cleanName || !cleanUsername) {
+            return res.status(400).json({
+                message: "Name and username cannot be empty"
+            });
+        }
+
+        if (cleanBio.length > 160) {
+            return res.status(400).json({
+                message: "Bio cannot exceed 160 characters"
+            });
+        }
+
+        const existingUser = await userModel.findOne({
+            username: cleanUsername,
+            _id: { $ne: req.user.userid }
+        });
+
+        if (existingUser) {
+            return res.status(409).json({
+                message: "Username is already taken"
+            });
+        }
+
+        const user = await userModel.findByIdAndUpdate(
+            req.user.userid,
+            {
+                $set: {
+                    name: cleanName,
+                    username: cleanUsername,
+                    bio: cleanBio
+                }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        ).select("-password");
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Profile updated successfully",
+            user
+        });
+
+    } catch (error) {
+        console.error("Update profile error:", error);
+
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: "Username is already taken"
+            });
+        }
+
+        return res.status(500).json({
+            message: "Failed to update profile"
+        });
+    }
+};
+
+
+
 module.exports = {
     getProfile,
     getUserProfile,
@@ -181,5 +265,6 @@ module.exports = {
     uploadProfile,
     followUser,
     unfollowUser,
-    searchUsers
+    searchUsers,
+    updateProfile
 };

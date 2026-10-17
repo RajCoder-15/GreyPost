@@ -13,6 +13,14 @@ const userSchema = mongoose.Schema({
         required: true
     }, 
 
+    
+    bio: {
+        type: String,
+        default: "",
+        maxlength: 160
+    },
+
+
     email:{
         type: String,
         required:  true, 
@@ -51,6 +59,7 @@ const userSchema = mongoose.Schema({
         ref: "user"
     }
     ]
+
 })
 
 module.exports = mongoose.model('user', userSchema);

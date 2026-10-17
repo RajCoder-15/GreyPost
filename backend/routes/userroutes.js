@@ -12,7 +12,8 @@ const {
     uploadProfile,
     followUser,
     unfollowUser,
-    searchUsers
+    searchUsers,
+    updateProfile
 } = require("../controllers/usercontroller");
 
 
@@ -59,5 +60,6 @@ router.get(
     isLoggedIn,
     unfollowUser
 );
+router.put("/profile", isLoggedIn, updateProfile);
 
 module.exports = router;
