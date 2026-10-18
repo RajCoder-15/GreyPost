@@ -1,57 +1,94 @@
 const userModel = require("../models/user");
 
 
+
 const getProfile = async (req, res) => {
+    try {
+        const user = await userModel
+            .findOne({ email: req.user.email })
+            .select("-password")
+            .populate({
+                path: "posts",
+                populate: {
+                    path: "user",
+                    select: "username name profilepic"
+                }
+            })
+            .populate(
+                "followers",
+                "username name profilepic"
+            )
+            .populate(
+                "following",
+                "username name profilepic"
+            );
 
-    let user = await userModel
-        .findOne({ email: req.user.email }).select("-password")
-        .populate({
-            path: "posts",
-            populate:{
-                path: "user",
-                select: "-password"
-            }
-        })
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
 
-    let currentUser = await userModel.findOne({
-        _id: req.user.userid
-    }).select("-password");
+        const currentUser = await userModel
+            .findById(req.user.userid)
+            .select("-password");
 
-    res.status(200).json({
-        user,
-        currentUser
-    });
+        return res.status(200).json({
+            user,
+            currentUser
+        });
+    } catch (error) {
+        console.error("Get profile error:", error);
+
+        return res.status(500).json({
+            message: "Failed to load profile"
+        });
+    }
 };
 
 
-
 const getUserProfile = async (req, res) => {
+    try {
+        const user = await userModel
+            .findOne({ username: req.params.username })
+            .select("-password")
+            .populate({
+                path: "posts",
+                populate: {
+                    path: "user",
+                    select: "username name profilepic"
+                }
+            })
+            .populate(
+                "followers",
+                "username name profilepic"
+            )
+            .populate(
+                "following",
+                "username name profilepic"
+            );
 
-    let user = await userModel
-        .findOne({ username: req.params.username })
-        .select("-password")
-        .populate({
-            path: "posts",
-            populate: {
-                path: "user",
-                select: "-password"
-            }
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        const currentUser = await userModel
+            .findById(req.user.userid)
+            .select("-password");
+
+        return res.status(200).json({
+            user,
+            currentUser
         });
+    } catch (error) {
+        console.error("Get user profile error:", error);
 
-    
-
-    if (!user) {
-        return res.status(404).json({
-            message: "User not found"
+        return res.status(500).json({
+            message: "Failed to load user profile"
         });
     }
-
-    let currentUser = await userModel.findById(req.user.userid).select("-password");
-
-    res.status(200).json({
-        user,
-        currentUser
-    });
 };
 
 const searchUsers = async (req, res) => {

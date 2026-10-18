@@ -6,7 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import EditProfile from "./pages/EditProfile";
 import UserProfile from "./pages/userProfile";
-
+import FollowList from "./pages/FollowList";
 function App() {
     return (
         <BrowserRouter>
@@ -17,6 +17,9 @@ function App() {
                 <Route path="/register" element={<Register />} />
 
                 <Route path="/profile" element={<Profile />} />
+
+                <Route path="/profile/followers" element={<FollowList />} />
+                <Route path="/profile/following" element={<FollowList />} />
 
                 <Route
                     path="/profile/:username"

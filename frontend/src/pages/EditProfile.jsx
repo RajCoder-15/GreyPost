@@ -112,8 +112,6 @@ function EditProfile() {
             }
 
             setSuccess("Profile updated successfully!");
-
-            // Navigate after a successful database update.
             navigate("/profile");
         } catch (err) {
             setError(err.message || "Could not save profile.");
