@@ -8,6 +8,8 @@ function SearchBar() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [hasSearched, setHasSearched] = useState(false);
+
     const navigate = useNavigate();
 
     async function handleSubmit(e) {
@@ -17,11 +19,16 @@ function SearchBar() {
 
         if (!query) {
             setUsers([]);
+            setError("");
+            setHasSearched(false);
+            setLoading(false);
             return;
         }
 
+        setUsers([]);
         setLoading(true);
         setError("");
+        setHasSearched(true);
 
         try {
             const response = await fetch(
@@ -32,12 +39,16 @@ function SearchBar() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(
-                    data.message || "Search failed"
-                );
+                throw new Error(data.message || "Search failed");
             }
 
-            setUsers(data.users || []);
+            const results = Array.isArray(data)
+                ? data
+                : Array.isArray(data.users)
+                    ? data.users
+                    : [];
+
+            setUsers(results);
         } catch (err) {
             setError(err.message || "Something went wrong");
             setUsers([]);
@@ -46,9 +57,19 @@ function SearchBar() {
         }
     }
 
+    function handleInputChange(e) {
+        setSearch(e.target.value);
+        setHasSearched(false);
+        setError("");
+        setUsers([]);
+    }
+
     function openProfile(username) {
         setSearch("");
         setUsers([]);
+        setError("");
+        setHasSearched(false);
+
         navigate(`/profile/${encodeURIComponent(username)}`);
     }
 
@@ -62,7 +83,7 @@ function SearchBar() {
                     type="text"
                     placeholder="Search users..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-full bg-zinc-800 text-white outline-none"
                 />
 
@@ -75,8 +96,10 @@ function SearchBar() {
                 </button>
             </form>
 
-            {(loading || error || users.length > 0) && (
+            {(loading || error || users.length > 0 ||
+                (hasSearched && !loading)) && (
                 <div className="absolute top-full left-0 mt-2 w-full rounded-xl bg-zinc-800 border border-zinc-700 shadow-xl z-50 overflow-hidden">
+
                     {loading && (
                         <p className="p-3 text-sm text-zinc-400">
                             Searching...
@@ -89,22 +112,30 @@ function SearchBar() {
                         </p>
                     )}
 
-                    {!loading && !error && users.map((user) => (
-                        <button
-                            key={user._id}
-                            type="button"
-                            onClick={() => openProfile(user.username)}
-                            className="w-full flex flex-col items-start px-4 py-3 hover:bg-zinc-700 text-left"
-                        >
-                            <span className="text-white font-medium">
-                                {user.name || user.username}
-                            </span>
+                    {!loading && !error && users.length > 0 &&
+                        users.map((user) => (
+                            <button
+                                key={user._id}
+                                type="button"
+                                onClick={() => openProfile(user.username)}
+                                className="w-full flex flex-col items-start px-4 py-3 hover:bg-zinc-700 text-left"
+                            >
+                                <span className="text-white font-medium">
+                                    {user.name || user.username}
+                                </span>
 
-                            <span className="text-sm text-zinc-400">
-                                @{user.username}
-                            </span>
-                        </button>
-                    ))}
+                                <span className="text-sm text-zinc-400">
+                                    @{user.username}
+                                </span>
+                            </button>
+                        ))}
+
+                    {!loading && !error && hasSearched &&
+                        users.length === 0 && (
+                        <p className="p-3 text-sm text-zinc-400">
+                            No users found.
+                        </p>
+                    )}
                 </div>
             )}
         </div>
