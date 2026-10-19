@@ -1,59 +1,124 @@
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import {
+    Plus,
+    LogOut,
+    UserRound,
+    House,
+    Search,
+    X,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
 import CreatePostModal from "./CreatePostModal";
 
 function Navbar({ onPostCreated }) {
     const [showModal, setShowModal] = useState(false);
+    const [showSearch, setShowSearch] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
     const navigate = useNavigate();
 
     async function handleLogout() {
-        const response = await fetch(
-            "http://localhost:3000/logout",
-            {
-                method: "GET",
-                credentials: "include"
-            }
-        );
+        if (loggingOut) return;
 
-        if (response.ok) {
-            navigate("/login");
+        setLoggingOut(true);
+
+        try {
+            const response = await fetch(
+                "http://localhost:3000/logout",
+                {
+                    method: "GET",
+                    credentials: "include",
+                }
+            );
+
+            if (response.ok) {
+                navigate("/login");
+            }
+        } catch (error) {
+            console.error("Logout failed:", error);
+        } finally {
+            setLoggingOut(false);
         }
     }
 
     return (
         <>
-            <nav className="flex w-full items-center justify-between px-8 py-4">
-                <button
-                    onClick={() => navigate("/")}
-                    className="text-2xl font-bold"
-                >
-                    GreyPost
-                </button>
-
-                <SearchBar />
-
-                <div className="flex items-center gap-6">
+            <nav className="relative z-40 w-full border-b border-white/[0.07] bg-[#0b0b10]">
+                <div className="mx-auto flex min-h-[72px] max-w-7xl items-center justify-between gap-3 px-3 sm:px-6">
                     <button
-                        onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 text-white"
-                        aria-label="Create post"
+                        type="button"
+                        onClick={() => navigate("/")}
+                        className="shrink-0 text-xl font-bold tracking-tight text-white transition hover:text-violet-300 sm:text-2xl"
+                        aria-label="GreyPost home"
                     >
-                        <Plus size={20} />
+                        Grey<span className="text-violet-400">Post</span>
+                        <span className="text-violet-400">.</span>
                     </button>
 
-                    <button
-                        onClick={() => navigate("/profile")}
-                        className="text-white"
-                    >
-                        Profile
-                    </button>
+                    <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+                        <div className="flex shrink-0 items-center gap-1">
+                            {showSearch && (
+                                <div className="w-28 sm:w-40 md:w-48 lg:w-56">
+                                    <SearchBar />
+                                </div>
+                            )}
 
-                    <button onClick={handleLogout}>
-                        Logout
-                    </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowSearch((prev) => !prev)}
+                                aria-label={showSearch ? "Close search" : "Search users"}
+                                title="Search users"
+                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-violet-500/10 hover:text-violet-300"
+                            >
+                                {showSearch ? <X size={20} /> : <Search size={20} />}
+                            </button>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => navigate("/")}
+                            aria-label="Home"
+                            title="Home"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-white/[0.06] hover:text-white"
+                        >
+                            <House size={19} />
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setShowModal(true)}
+                            aria-label="Create post"
+                            title="Create post"
+                            className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-violet-500 px-3 text-sm font-medium text-white transition hover:bg-violet-400 active:scale-[0.98] sm:px-4"
+                        >
+                            <Plus size={19} />
+                            <span className="hidden sm:inline">Create</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => navigate("/profile")}
+                            className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-white/[0.08] px-2 text-sm font-medium text-zinc-300 transition hover:border-violet-400/30 hover:bg-violet-500/[0.08] hover:text-white sm:px-4"
+                        >
+                            <UserRound size={17} />
+                            <span className="hidden sm:inline">Profile</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            disabled={loggingOut}
+                            title="Logout"
+                            aria-label="Logout"
+                            className="flex h-10 shrink-0 items-center justify-center rounded-xl px-2 text-zinc-400 transition hover:bg-red-500/[0.08] hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50 sm:px-3"
+                        >
+                            <LogOut size={18} />
+                            <span className="hidden lg:inline">
+                                {loggingOut ? "Logging out..." : "Logout"}
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </nav>
 

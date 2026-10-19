@@ -206,11 +206,11 @@ function Profile() {
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-white sm:px-6">
       <div className="mx-auto max-w-3xl">
 
-        {/* Profile Header */}
+     
         <section className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 sm:p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
 
-            {/* Profile Picture */}
+         
             <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border border-zinc-700 bg-zinc-800">
               {user.profilepic &&
               user.profilepic !== "default.webp" ? (
@@ -231,7 +231,7 @@ function Profile() {
               )}
             </div>
 
-            {/* Name and Username */}
+        
             <div className="min-w-0 flex-1">
               <h1 className="break-words text-2xl font-bold">
                 {user.name || user.username || "User"}
@@ -241,7 +241,7 @@ function Profile() {
                 @{user.username || "username"}
               </p>
 
-              {/* Profile Statistics */}
+          
               <div className="mt-5 flex flex-wrap gap-6">
 
                 <div>
@@ -253,7 +253,7 @@ function Profile() {
                   </p>
                 </div>
 
-                {/* Followers */}
+             
                 <button
                   type="button"
                   onClick={() => navigate("/profile/followers")}
@@ -267,7 +267,7 @@ function Profile() {
                   </p>
                 </button>
 
-                {/* Following */}
+              
                 <button
                   type="button"
                   onClick={() => navigate("/profile/following")}
@@ -284,7 +284,7 @@ function Profile() {
               </div>
             </div>
 
-            {/* Edit Profile */}
+          
             <button
               type="button"
               onClick={() => navigate("/edit-profile")}
@@ -295,7 +295,7 @@ function Profile() {
             </button>
           </div>
 
-          {/* Bio */}
+      
           <div className="mt-6 border-t border-zinc-800 pt-5">
             <h2 className="mb-2 text-sm font-semibold text-zinc-300">
               About
@@ -312,7 +312,7 @@ function Profile() {
           </div>
         </section>
 
-        {/* Posts Heading */}
+      
         <div className="mb-5 mt-10 flex items-center justify-between">
           <h2 className="text-xl font-semibold">
             Your Posts
@@ -324,7 +324,7 @@ function Profile() {
           </span>
         </div>
 
-        {/* Edit Post Form */}
+      
         {editingPost && (
           <form
             onSubmit={updatePost}
@@ -369,7 +369,7 @@ function Profile() {
           </form>
         )}
 
-        {/* Posts List */}
+     
         {posts.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-zinc-800 px-5 py-12 text-center">
             <p className="text-lg font-medium">
@@ -415,7 +415,7 @@ function Profile() {
                   isFollowing={false}
                 />
 
-                {/* Edit and Delete Actions */}
+             
                 <div className="flex flex-wrap gap-3 border-t border-zinc-800 px-4 py-3">
                   <button
                     type="button"
