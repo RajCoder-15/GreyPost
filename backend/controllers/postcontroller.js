@@ -1,5 +1,6 @@
 const postModel = require("../models/post");
 const userModel = require("../models/user");
+const notificationModel = require("../models/notification");
 
 
 
@@ -48,6 +49,7 @@ const createPost = async (req, res) => {
 };
 
 
+
 const likePost = async (req, res) => {
     try {
         const post = await postModel.findById(req.params.id);
@@ -59,6 +61,7 @@ const likePost = async (req, res) => {
         }
 
         const userId = req.user.userid.toString();
+        const postOwnerId = post.user.toString();
 
         const alreadyLiked = post.likes.some(
             (id) => id.toString() === userId
@@ -66,8 +69,24 @@ const likePost = async (req, res) => {
 
         if (alreadyLiked) {
             post.likes.pull(userId);
+
+            await notificationModel.deleteOne({
+                recipient: postOwnerId,
+                sender: userId,
+                type: "like",
+                post: post._id
+            });
         } else {
             post.likes.push(userId);
+
+            if (userId !== postOwnerId) {
+                await notificationModel.create({
+                    recipient: postOwnerId,
+                    sender: userId,
+                    type: "like",
+                    post: post._id
+                });
+            }
         }
 
         await post.save();
@@ -80,11 +99,14 @@ const likePost = async (req, res) => {
             liked: !alreadyLiked
         });
     } catch (error) {
+        console.error("Like post error:", error);
+
         return res.status(500).json({
             message: "Failed to update like"
         });
     }
 };
+
 
 
 const updatePost = async (req, res) => {

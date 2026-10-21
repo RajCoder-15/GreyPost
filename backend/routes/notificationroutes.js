@@ -5,9 +5,12 @@ const mongoose = require("mongoose");
 const notificationModel = require("../models/notification");
 const isLoggedIn = require("../middleware/authmiddleware");
 
+
+
+
 router.get("/", isLoggedIn, async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.userid;
 
         const notifications = await notificationModel
             .find({ recipient: userId })
@@ -19,22 +22,31 @@ router.get("/", isLoggedIn, async (req, res) => {
 
         res.status(200).json({ notifications });
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch notifications" });
+        res.status(500).json({
+            message: "Failed to fetch notifications"
+        });
     }
 });
 
+
+
 router.get("/unread-count", isLoggedIn, async (req, res) => {
     try {
+        const userId = req.user.userid;
+
         const count = await notificationModel.countDocuments({
-            recipient: req.user._id,
+            recipient: userId,
             isRead: false
         });
 
         res.status(200).json({ count });
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch unread count" });
+        res.status(500).json({
+            message: "Failed to fetch unread count"
+        });
     }
 });
+
 
 router.patch("/read-all", isLoggedIn, async (req, res) => {
     try {

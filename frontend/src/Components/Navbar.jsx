@@ -1,12 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     Plus,
     LogOut,
     UserRound,
     House,
     Search,
-    X
+    X,
+    Bell
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "./SearchBar";
@@ -16,7 +17,32 @@ function Navbar({ onPostCreated }) {
     const [showModal, setShowModal] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [loggingOut, setLoggingOut] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const navigate = useNavigate();
+
+    const fetchUnreadCount = useCallback(async () => {
+        try {
+            const response = await fetch(
+                "http://localhost:3000/notifications/unread-count",
+                { credentials: "include" }
+            );
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+            setUnreadCount(data.count || 0);
+        } catch (error) {
+            console.error("Failed to fetch unread count:", error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchUnreadCount();
+
+        const interval = setInterval(fetchUnreadCount, 30000);
+
+        return () => clearInterval(interval);
+    }, [fetchUnreadCount]);
 
     async function handleLogout() {
         if (loggingOut) return;
@@ -80,6 +106,21 @@ function Navbar({ onPostCreated }) {
                                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-violet-500/10 hover:text-violet-300 sm:h-10 sm:w-10"
                                 >
                                     <Search size={19} />
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/notifications")}
+                                    aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
+                                    title="Notifications"
+                                    className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-violet-500/10 hover:text-violet-300 sm:h-10 sm:w-10"
+                                >
+                                    <Bell size={19} />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#0b0b10] bg-violet-500 px-1 text-[10px] font-bold leading-none text-white">
+                                            {unreadCount > 99 ? "99+" : unreadCount}
+                                        </span>
+                                    )}
                                 </button>
 
                                 <button
