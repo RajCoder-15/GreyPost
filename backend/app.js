@@ -20,7 +20,7 @@ const authRoutes = require("./routes/authroutes");
 const userRoutes = require("./routes/userroutes");
 const postRoutes = require("./routes/postroutes");
 const commentRoutes = require("./routes/commentroutes");
-
+const notificationRoutes = require("./routes/notificationroutes");
 
 
 
@@ -44,6 +44,7 @@ app.use("/", authRoutes);
 app.use("/", userRoutes);
 app.use("/", postRoutes);
 app.use("/comments", commentRoutes);
+app.use("/notifications", notificationRoutes);
 
 
 
