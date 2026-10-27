@@ -13,7 +13,9 @@ const {
     followUser,
     unfollowUser,
     searchUsers,
-    updateProfile
+    updateProfile,
+    uploadProfileImage,
+    uploadCoverImage
 } = require("../controllers/usercontroller");
 
 
@@ -60,6 +62,21 @@ router.get(
     isLoggedIn,
     unfollowUser
 );
+
+router.post(
+    "/profile/upload-picture",
+    isLoggedIn,
+    upload.single("image"),
+    uploadProfileImage
+);
+
+router.post(
+    "/profile/upload-cover",
+    isLoggedIn,
+    upload.single("image"),
+    uploadCoverImage
+);
+
 router.put("/profile", isLoggedIn, updateProfile);
 
 module.exports = router;
