@@ -153,11 +153,7 @@ const uploadProfileImage = async (req, res) => {
 
         const user = await userModel.findByIdAndUpdate(
             req.user.userid,
-            {
-                $set: {
-                    profilepic: `images/${req.file.filename}`
-                }
-            },
+            { $set: { profilepic: `images/${req.file.filename}` } },
             { new: true }
         ).select("-password");
 
@@ -172,6 +168,7 @@ const uploadProfileImage = async (req, res) => {
             user
         });
     } catch (error) {
+        console.error("Profile picture upload error:", error);
         return res.status(500).json({
             message: "Failed to update profile picture"
         });
@@ -188,11 +185,7 @@ const uploadCoverImage = async (req, res) => {
 
         const user = await userModel.findByIdAndUpdate(
             req.user.userid,
-            {
-                $set: {
-                    coverpic: `images/${req.file.filename}`
-                }
-            },
+            { $set: { coverpic: `images/${req.file.filename}` } },
             { new: true }
         ).select("-password");
 
@@ -207,11 +200,13 @@ const uploadCoverImage = async (req, res) => {
             user
         });
     } catch (error) {
+        console.error("Cover art upload error:", error);
         return res.status(500).json({
             message: "Failed to update cover art"
         });
     }
 };
+
 
 
 const followUser = async (req, res) => {
@@ -371,6 +366,8 @@ module.exports = {
     getUserProfile,
     profileUploadPage,
     uploadProfile,
+    uploadProfileImage,
+    uploadCoverImage,
     followUser,
     unfollowUser,
     searchUsers,
