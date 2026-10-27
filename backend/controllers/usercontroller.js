@@ -143,6 +143,77 @@ const uploadProfile = async (req, res) => {
 };
 
 
+const uploadProfileImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Please select an image"
+            });
+        }
+
+        const user = await userModel.findByIdAndUpdate(
+            req.user.userid,
+            {
+                $set: {
+                    profilepic: `images/${req.file.filename}`
+                }
+            },
+            { new: true }
+        ).select("-password");
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Profile picture updated successfully",
+            user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Failed to update profile picture"
+        });
+    }
+};
+
+const uploadCoverImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Please select an image"
+            });
+        }
+
+        const user = await userModel.findByIdAndUpdate(
+            req.user.userid,
+            {
+                $set: {
+                    coverpic: `images/${req.file.filename}`
+                }
+            },
+            { new: true }
+        ).select("-password");
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Cover art updated successfully",
+            user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Failed to update cover art"
+        });
+    }
+};
+
+
 const followUser = async (req, res) => {
 
     let currentUser = await userModel.findById(

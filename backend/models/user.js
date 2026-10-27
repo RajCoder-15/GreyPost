@@ -41,6 +41,11 @@ const userSchema = mongoose.Schema({
         type: String,
         default: "default.webp"
     },
+
+    coverpic: {
+        type: String,
+        default: ""
+    },
     
     posts:[
         {type:mongoose.Schema.Types.ObjectId, ref:"post"}
