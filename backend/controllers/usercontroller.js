@@ -153,7 +153,7 @@ const uploadProfileImage = async (req, res) => {
 
         const user = await userModel.findByIdAndUpdate(
             req.user.userid,
-            { $set: { profilepic: `images/${req.file.filename}` } },
+            { $set: { profilepic: `images/uploads/${req.file.filename}` } },
             { new: true }
         ).select("-password");
 
@@ -185,7 +185,7 @@ const uploadCoverImage = async (req, res) => {
 
         const user = await userModel.findByIdAndUpdate(
             req.user.userid,
-            { $set: { coverpic: `images/${req.file.filename}` } },
+            { $set: {coverpic: `images/uploads/${req.file.filename}` } },
             { new: true }
         ).select("-password");
 
