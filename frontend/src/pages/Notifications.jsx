@@ -1,7 +1,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Heart, MessageCircle, UserPlus, CheckCheck, ArrowLeft, LoaderCircle } from "lucide-react";
+import {
+    Bell,
+    Heart,
+    MessageCircle,
+    UserPlus,
+    CheckCheck,
+    ArrowLeft,
+    LoaderCircle,
+    UserRound
+} from "lucide-react";
 import Navbar from "../Components/Navbar";
 
 function Notifications() {
@@ -40,6 +49,17 @@ function Notifications() {
     useEffect(() => {
         fetchNotifications();
     }, [fetchNotifications]);
+
+    function getImageUrl(path) {
+        if (!path || path === "default.webp") return "";
+        if (path.startsWith("http")) return path;
+        return `http://localhost:3000/${path.replace(/^\/+/, "")}`;
+    }
+
+    function openProfile(username) {
+        if (!username) return;
+        navigate(`/profile/${encodeURIComponent(username)}`);
+    }
 
     async function markAllAsRead() {
         if (markingAll) return;
@@ -95,8 +115,6 @@ function Notifications() {
     }
 
     function getNotificationDetails(notification) {
-        const sender = notification.sender?.username || notification.sender?.name || "Someone";
-
         if (notification.type === "like") {
             return {
                 icon: Heart,
@@ -226,24 +244,51 @@ function Notifications() {
                         {notifications.map(notification => {
                             const details = getNotificationDetails(notification);
                             const Icon = details.icon;
-                            const sender = notification.sender?.username || notification.sender?.name || "Someone";
+                            const sender = notification.sender;
+                            const username = sender?.username;
+                            const displayName = username || sender?.name || "Someone";
+                            const profileImage = getImageUrl(sender?.profilepic);
 
                             return (
-                                <button
-                                    type="button"
+                                <div
                                     key={notification._id}
                                     onClick={() => markAsRead(notification._id)}
-                                    className={`flex w-full items-start gap-3 border-b border-white/[0.06] p-4 text-left transition last:border-b-0 hover:bg-white/[0.035] sm:gap-4 sm:p-5 ${
+                                    className={`flex items-start gap-3 border-b border-white/[0.06] p-4 transition last:border-b-0 hover:bg-white/[0.035] sm:gap-4 sm:p-5 ${
                                         notification.isRead ? "" : "bg-violet-500/[0.045]"
                                     }`}
                                 >
-                                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${details.background} ${details.color}`}>
-                                        <Icon size={19} />
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={event => {
+                                            event.stopPropagation();
+                                            openProfile(username);
+                                        }}
+                                        aria-label={`Open ${displayName}'s profile`}
+                                        className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-zinc-800 text-zinc-400"
+                                    >
+                                        <UserRound size={20} />
+                                        {profileImage && (
+                                            <img
+                                                src={profileImage}
+                                                alt={displayName}
+                                                className="absolute inset-0 h-full w-full object-cover"
+                                                onError={event => event.currentTarget.remove()}
+                                            />
+                                        )}
+                                    </button>
 
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm leading-6 text-zinc-200">
-                                            <span className="font-semibold text-white">{sender}</span>{" "}
+                                            <button
+                                                type="button"
+                                                onClick={event => {
+                                                    event.stopPropagation();
+                                                    openProfile(username);
+                                                }}
+                                                className="font-semibold text-white hover:text-violet-300"
+                                            >
+                                                {displayName}
+                                            </button>{" "}
                                             {details.message}
                                         </p>
 
@@ -264,10 +309,14 @@ function Notifications() {
                                         </p>
                                     </div>
 
+                                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${details.background} ${details.color}`}>
+                                        <Icon size={17} />
+                                    </div>
+
                                     {!notification.isRead && (
                                         <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-violet-400" />
                                     )}
-                                </button>
+                                </div>
                             );
                         })}
                     </div>

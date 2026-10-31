@@ -6,19 +6,24 @@ import {
     UserPlus,
     Send,
     Trash2,
-    LoaderCircle
+    LoaderCircle,
+    UserRound
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function PostCard({
     postId,
     username,
     userId,
     currentUserId,
+    profilepic,
     image,
     caption,
     likes: initialLikes = [],
     isFollowing: initialFollowing
 }) {
+    const navigate = useNavigate();
+
     const [liked, setLiked] = useState(false);
     const [likeLoading, setLikeLoading] = useState(false);
     const [likesCount, setLikesCount] = useState(initialLikes.length);
@@ -43,6 +48,20 @@ function PostCard({
     useEffect(() => {
         setFollowing(initialFollowing);
     }, [initialFollowing]);
+
+    function getImageUrl(path) {
+        if (!path || path === "default.webp") return "";
+
+        if (path.startsWith("http")) return path;
+
+        return `http://localhost:3000/${path.replace(/^\/+/, "")}`;
+    }
+
+    function openProfile(name) {
+        if (name) {
+            navigate(`/profile/${encodeURIComponent(name)}`);
+        }
+    }
 
     async function toggleFollow() {
         const endpoint = following ? "unfollow" : "follow";
@@ -158,9 +177,9 @@ function PostCard({
             }
 
             setCommentText("");
-            setComments((previousComments) => [
+            setComments((previous) => [
                 data.comment,
-                ...previousComments
+                ...previous
             ]);
         } catch (error) {
             setCommentError(error.message || "Failed to add comment");
@@ -194,10 +213,8 @@ function PostCard({
                 throw new Error(data.message || "Failed to delete comment");
             }
 
-            setComments((previousComments) =>
-                previousComments.filter(
-                    (comment) => comment._id !== commentId
-                )
+            setComments((previous) =>
+                previous.filter((comment) => comment._id !== commentId)
             );
         } catch (error) {
             setCommentError(error.message || "Failed to delete comment");
@@ -206,21 +223,50 @@ function PostCard({
         }
     }
 
+    const authorImage = getImageUrl(profilepic);
+
     return (
         <article className="mx-auto box-border w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#121218] shadow-lg shadow-black/10 transition-colors duration-200 hover:border-white/[0.12]">
+
             <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
                 <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-violet-400/20 bg-violet-500/10 text-base font-semibold text-violet-300 sm:h-11 sm:w-11">
-                        {username?.charAt(0).toUpperCase() || "U"}
-                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => openProfile(username)}
+                        aria-label={`Open ${username}'s profile`}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/[0.08] bg-zinc-800 transition hover:border-violet-400/50 sm:h-11 sm:w-11"
+                    >
+                        {authorImage ? (
+                            <img
+                                src={authorImage}
+                                alt={username}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                }}
+                            />
+                        ) : (
+                            <UserRound size={20} className="text-zinc-400" />
+                        )}
+                    </button>
 
                     <div className="min-w-0 flex-1">
-                        <h3 className="break-words text-sm font-semibold text-zinc-100">
+                        <button
+                            type="button"
+                            onClick={() => openProfile(username)}
+                            className="block max-w-full break-words text-left text-sm font-semibold text-zinc-100 transition hover:text-violet-300"
+                        >
                             {username}
-                        </h3>
-                        <p className="break-all text-xs text-zinc-500">
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => openProfile(username)}
+                            className="block break-all text-left text-xs text-zinc-500 hover:text-violet-300"
+                        >
                             @{username}
-                        </p>
+                        </button>
                     </div>
                 </div>
 
@@ -253,7 +299,7 @@ function PostCard({
 
             {caption && (
                 <div className="min-w-0 px-3 pt-4 sm:px-5">
-                    <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6 text-zinc-300">
+                    <p className="whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300 [overflow-wrap:anywhere]">
                         {caption}
                     </p>
                 </div>
@@ -272,10 +318,7 @@ function PostCard({
                     {likeLoading ? (
                         <LoaderCircle size={19} className="animate-spin" />
                     ) : (
-                        <Heart
-                            size={19}
-                            fill={liked ? "currentColor" : "none"}
-                        />
+                        <Heart size={19} fill={liked ? "currentColor" : "none"} />
                     )}
                     <span>{likesCount}</span>
                 </button>
@@ -297,6 +340,7 @@ function PostCard({
 
             {showComments && (
                 <section className="box-border w-full min-w-0 max-w-full overflow-hidden border-t border-white/[0.07] px-3 py-4 sm:px-5">
+
                     <form
                         onSubmit={handleCommentSubmit}
                         className="flex min-w-0 items-center gap-2"
@@ -344,30 +388,55 @@ function PostCard({
                     ) : (
                         <div className="mt-5 min-w-0 space-y-4">
                             {comments.map((comment) => {
+                                const commentUser = comment.user;
                                 const commentUserId =
-                                    comment.user?._id || comment.user;
+                                    commentUser?._id || commentUser;
 
                                 const isCommentAuthor =
                                     String(commentUserId) === String(currentUserId);
 
                                 const commentUsername =
-                                    comment.user?.username ||
-                                    comment.user?.name ||
+                                    commentUser?.username ||
+                                    commentUser?.name ||
                                     "User";
+
+                                const commentImage = getImageUrl(
+                                    commentUser?.profilepic
+                                );
 
                                 return (
                                     <div
                                         key={comment._id}
                                         className="flex min-w-0 items-start gap-2.5 sm:gap-3"
                                     >
-                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.06] bg-zinc-800 text-sm font-medium text-zinc-300">
-                                            {commentUsername.charAt(0).toUpperCase()}
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => openProfile(commentUser?.username)}
+                                            aria-label={`Open ${commentUsername}'s profile`}
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/[0.06] bg-zinc-800"
+                                        >
+                                            {commentImage ? (
+                                                <img
+                                                    src={commentImage}
+                                                    alt={commentUsername}
+                                                    className="h-full w-full object-cover"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = "none";
+                                                    }}
+                                                />
+                                            ) : (
+                                                <UserRound size={17} className="text-zinc-400" />
+                                            )}
+                                        </button>
 
                                         <div className="box-border min-w-0 flex-1 rounded-xl bg-white/[0.025] px-3 py-3">
-                                            <p className="break-words text-sm font-medium text-zinc-200 [overflow-wrap:anywhere]">
+                                            <button
+                                                type="button"
+                                                onClick={() => openProfile(commentUser?.username)}
+                                                className="break-words text-left text-sm font-medium text-zinc-200 hover:text-violet-300"
+                                            >
                                                 {commentUsername}
-                                            </p>
+                                            </button>
 
                                             <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-400 [overflow-wrap:anywhere]">
                                                 {comment.content}

@@ -226,6 +226,7 @@ function Home() {
                                                     "Unknown User"
                                                 }
                                                 userId={authorId}
+                                                profilepic={post.user?.profilepic}
                                                 currentUserId={currentUserId}
                                                 image={
                                                     post.image

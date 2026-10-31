@@ -22,13 +22,6 @@ const postRoutes = require("./routes/postroutes");
 const commentRoutes = require("./routes/commentroutes");
 const notificationRoutes = require("./routes/notificationroutes");
 
-
-
-
-app.set("view engine", "ejs");
-
-
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

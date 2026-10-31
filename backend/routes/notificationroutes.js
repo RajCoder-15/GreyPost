@@ -5,9 +5,6 @@ const mongoose = require("mongoose");
 const notificationModel = require("../models/notification");
 const isLoggedIn = require("../middleware/authmiddleware");
 
-
-
-
 router.get("/", isLoggedIn, async (req, res) => {
     try {
         const userId = req.user.userid;
@@ -20,15 +17,14 @@ router.get("/", isLoggedIn, async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(50);
 
-        res.status(200).json({ notifications });
+        return res.status(200).json({ notifications });
     } catch (error) {
-        res.status(500).json({
+        console.error("Fetch notifications error:", error);
+        return res.status(500).json({
             message: "Failed to fetch notifications"
         });
     }
 });
-
-
 
 router.get("/unread-count", isLoggedIn, async (req, res) => {
     try {
@@ -39,20 +35,22 @@ router.get("/unread-count", isLoggedIn, async (req, res) => {
             isRead: false
         });
 
-        res.status(200).json({ count });
+        return res.status(200).json({ count });
     } catch (error) {
-        res.status(500).json({
+        console.error("Unread count error:", error);
+        return res.status(500).json({
             message: "Failed to fetch unread count"
         });
     }
 });
 
-
 router.patch("/read-all", isLoggedIn, async (req, res) => {
     try {
-        await notificationModel.updateMany(
+        const userId = req.user.userid;
+
+        const result = await notificationModel.updateMany(
             {
-                recipient: req.user._id,
+                recipient: userId,
                 isRead: false
             },
             {
@@ -60,17 +58,22 @@ router.patch("/read-all", isLoggedIn, async (req, res) => {
             }
         );
 
-        res.status(200).json({
-            message: "All notifications marked as read"
+        return res.status(200).json({
+            message: "All notifications marked as read",
+            modifiedCount: result.modifiedCount
         });
     } catch (error) {
-        res.status(500).json({ message: "Failed to update notifications" });
+        console.error("Mark all notifications error:", error);
+        return res.status(500).json({
+            message: "Failed to update notifications"
+        });
     }
 });
 
 router.patch("/:notificationId/read", isLoggedIn, async (req, res) => {
     try {
         const { notificationId } = req.params;
+        const userId = req.user.userid;
 
         if (!mongoose.Types.ObjectId.isValid(notificationId)) {
             return res.status(400).json({
@@ -81,7 +84,7 @@ router.patch("/:notificationId/read", isLoggedIn, async (req, res) => {
         const notification = await notificationModel.findOneAndUpdate(
             {
                 _id: notificationId,
-                recipient: req.user._id
+                recipient: userId
             },
             {
                 $set: { isRead: true }
@@ -97,12 +100,15 @@ router.patch("/:notificationId/read", isLoggedIn, async (req, res) => {
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Notification marked as read",
             notification
         });
     } catch (error) {
-        res.status(500).json({ message: "Failed to update notification" });
+        console.error("Mark notification error:", error);
+        return res.status(500).json({
+            message: "Failed to update notification"
+        });
     }
 });
 
