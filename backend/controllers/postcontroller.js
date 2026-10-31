@@ -141,6 +141,7 @@ const deletePost = async(req, res) => {
 
 }
 
+
 const getFeed = async (req, res) => {
     try {
         const currentUser = await userModel
@@ -153,18 +154,35 @@ const getFeed = async (req, res) => {
             });
         }
 
-        const userIds = [
-            currentUser._id,
-            ...currentUser.following
-        ];
+        const followingIds = currentUser.following.map(
+            (id) => id.toString()
+        );
 
         const posts = await postModel
-            .find({ user: { $in: userIds } })
+            .find({})
             .populate("user", "username name profilepic")
             .sort({ date: -1 });
 
+        const followingPosts = [];
+        const otherPosts = [];
+
+        posts.forEach((post) => {
+            const authorId = post.user?._id?.toString();
+
+            if (followingIds.includes(authorId)) {
+                followingPosts.push(post);
+            } else {
+                otherPosts.push(post);
+            }
+        });
+
+        const sortedPosts = [
+            ...followingPosts,
+            ...otherPosts
+        ];
+
         return res.status(200).json({
-            posts,
+            posts: sortedPosts,
             currentUserId: currentUser._id,
             following: currentUser.following
         });
@@ -177,6 +195,7 @@ const getFeed = async (req, res) => {
         });
     }
 };
+
 
 
 module.exports = {
