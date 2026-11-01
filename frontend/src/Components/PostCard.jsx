@@ -13,6 +13,9 @@ import { useNavigate } from "react-router-dom";
 
 function PostCard({
     postId,
+    title,
+    category,
+    date,
     username,
     userId,
     currentUserId,
@@ -39,7 +42,7 @@ function PostCard({
     useEffect(() => {
         setLiked(
             initialLikes.some(
-                (id) => String(id?._id || id) === String(currentUserId)
+                id => String(id?._id || id) === String(currentUserId)
             )
         );
         setLikesCount(initialLikes.length);
@@ -51,16 +54,12 @@ function PostCard({
 
     function getImageUrl(path) {
         if (!path || path === "default.webp") return "";
-
         if (path.startsWith("http")) return path;
-
         return `http://localhost:3000/${path.replace(/^\/+/, "")}`;
     }
 
     function openProfile(name) {
-        if (name) {
-            navigate(`/profile/${encodeURIComponent(name)}`);
-        }
+        if (name) navigate(`/profile/${encodeURIComponent(name)}`);
     }
 
     async function toggleFollow() {
@@ -142,13 +141,11 @@ function PostCard({
         const shouldOpen = !showComments;
         setShowComments(shouldOpen);
 
-        if (shouldOpen) {
-            await fetchComments();
-        }
+        if (shouldOpen) await fetchComments();
     }
 
-    async function handleCommentSubmit(e) {
-        e.preventDefault();
+    async function handleCommentSubmit(event) {
+        event.preventDefault();
 
         const content = commentText.trim();
 
@@ -177,10 +174,7 @@ function PostCard({
             }
 
             setCommentText("");
-            setComments((previous) => [
-                data.comment,
-                ...previous
-            ]);
+            setComments(previous => [data.comment, ...previous]);
         } catch (error) {
             setCommentError(error.message || "Failed to add comment");
         } finally {
@@ -213,8 +207,8 @@ function PostCard({
                 throw new Error(data.message || "Failed to delete comment");
             }
 
-            setComments((previous) =>
-                previous.filter((comment) => comment._id !== commentId)
+            setComments(previous =>
+                previous.filter(comment => comment._id !== commentId)
             );
         } catch (error) {
             setCommentError(error.message || "Failed to delete comment");
@@ -223,50 +217,51 @@ function PostCard({
         }
     }
 
+    function getReadingTime(text) {
+        const words = text?.trim().split(/\s+/).filter(Boolean).length || 0;
+        return Math.max(1, Math.ceil(words / 200));
+    }
+
     const authorImage = getImageUrl(profilepic);
 
     return (
-        <article className="mx-auto box-border w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#121218] shadow-lg shadow-black/10 transition-colors duration-200 hover:border-white/[0.12]">
-
-            <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
-                <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
-
+        <article className="overflow-hidden border-b border-[#e8ded2] pb-8">
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                     <button
                         type="button"
                         onClick={() => openProfile(username)}
                         aria-label={`Open ${username}'s profile`}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/[0.08] bg-zinc-800 transition hover:border-violet-400/50 sm:h-11 sm:w-11"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e9ded1]"
                     >
                         {authorImage ? (
                             <img
                                 src={authorImage}
                                 alt={username}
                                 className="h-full w-full object-cover"
-                                onError={(e) => {
-                                    e.currentTarget.style.display = "none";
+                                onError={event => {
+                                    event.currentTarget.style.display = "none";
                                 }}
                             />
                         ) : (
-                            <UserRound size={20} className="text-zinc-400" />
+                            <UserRound size={19} className="text-[#927762]" />
                         )}
                     </button>
 
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0">
                         <button
                             type="button"
                             onClick={() => openProfile(username)}
-                            className="block max-w-full break-words text-left text-sm font-semibold text-zinc-100 transition hover:text-violet-300"
+                            className="block truncate text-sm font-semibold text-[#40352b] hover:text-[#a45b37]"
                         >
                             {username}
                         </button>
 
-                        <button
-                            type="button"
-                            onClick={() => openProfile(username)}
-                            className="block break-all text-left text-xs text-zinc-500 hover:text-violet-300"
-                        >
-                            @{username}
-                        </button>
+                        <p className="text-xs text-[#998777]">
+                            {date ? new Date(date).toLocaleDateString() : "Recently published"}
+                            {" · "}
+                            {getReadingTime(caption)} min read
+                        </p>
                     </div>
                 </div>
 
@@ -274,91 +269,92 @@ function PostCard({
                     <button
                         type="button"
                         onClick={toggleFollow}
-                        className={`flex shrink-0 items-center gap-1 rounded-lg border px-2 py-2 text-xs font-medium transition sm:gap-1.5 sm:px-3 ${
-                            following
-                                ? "border-white/[0.08] text-zinc-400 hover:border-red-400/30 hover:text-red-300"
-                                : "border-violet-400/20 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20"
-                        }`}
+                        className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#ddcbbb] px-3 py-1.5 text-xs font-medium text-[#795c48] transition hover:border-[#a45b37] hover:text-[#a45b37]"
                     >
-                        <UserPlus size={14} />
-                        <span>{following ? "Following" : "Follow"}</span>
+                        <UserPlus size={13} />
+                        {following ? "Following" : "Follow"}
                     </button>
                 )}
             </div>
 
+            <div className="mt-5">
+                {category && (
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#a45b37]">
+                        {category}
+                    </span>
+                )}
+
+                <h2 className="mt-2 font-serif text-2xl font-semibold leading-tight text-[#352b23] sm:text-3xl">
+                    {title || "Untitled article"}
+                </h2>
+            </div>
+
             {image && (
-                <div className="box-border w-full min-w-0 max-w-full overflow-hidden bg-black/20">
+                <div className="mt-5 overflow-hidden rounded-xl bg-[#eee5da]">
                     <img
                         src={image}
-                        alt={`Post by ${username}`}
+                        alt={title || `Article by ${username}`}
                         loading="lazy"
-                        className="mx-auto block h-auto max-h-[650px] w-full max-w-full object-contain"
+                        className="max-h-[420px] w-full object-cover"
                     />
                 </div>
             )}
 
             {caption && (
-                <div className="min-w-0 px-3 pt-4 sm:px-5">
-                    <p className="whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300 [overflow-wrap:anywhere]">
-                        {caption}
-                    </p>
-                </div>
+                <p className="mt-5 whitespace-pre-wrap break-words text-[15px] leading-7 text-[#716356] [overflow-wrap:anywhere]">
+                    {caption}
+                </p>
             )}
 
-            <div className="flex min-w-0 flex-wrap items-center gap-1 px-2 py-3 sm:gap-2 sm:px-4">
+            <div className="mt-5 flex items-center gap-5">
                 <button
                     type="button"
                     onClick={toggleLike}
                     disabled={likeLoading}
-                    aria-label={liked ? "Unlike post" : "Like post"}
-                    className={`flex min-w-0 items-center gap-2 rounded-xl px-2.5 py-2 text-sm transition hover:bg-white/[0.04] disabled:opacity-50 sm:px-3 ${
-                        liked ? "text-rose-400" : "text-zinc-400 hover:text-rose-300"
+                    aria-label={liked ? "Unlike article" : "Like article"}
+                    className={`flex items-center gap-2 text-sm transition disabled:opacity-50 ${
+                        liked ? "text-[#b34e43]" : "text-[#917e6d] hover:text-[#b34e43]"
                     }`}
                 >
                     {likeLoading ? (
-                        <LoaderCircle size={19} className="animate-spin" />
+                        <LoaderCircle size={18} className="animate-spin" />
                     ) : (
-                        <Heart size={19} fill={liked ? "currentColor" : "none"} />
+                        <Heart size={18} fill={liked ? "currentColor" : "none"} />
                     )}
-                    <span>{likesCount}</span>
+                    {likesCount}
                 </button>
 
                 <button
                     type="button"
                     onClick={toggleComments}
                     aria-expanded={showComments}
-                    className={`flex min-w-0 items-center gap-2 rounded-xl px-2.5 py-2 text-sm transition hover:bg-white/[0.04] sm:px-3 ${
-                        showComments
-                            ? "text-violet-300"
-                            : "text-zinc-400 hover:text-violet-300"
-                    }`}
+                    className="flex items-center gap-2 text-sm text-[#917e6d] transition hover:text-[#a45b37]"
                 >
-                    <MessageCircle size={19} />
-                    <span>Comments</span>
+                    <MessageCircle size={18} />
+                    Comments
                 </button>
             </div>
 
             {showComments && (
-                <section className="box-border w-full min-w-0 max-w-full overflow-hidden border-t border-white/[0.07] px-3 py-4 sm:px-5">
-
+                <section className="mt-5 border-t border-[#e8ded2] pt-5">
                     <form
                         onSubmit={handleCommentSubmit}
-                        className="flex min-w-0 items-center gap-2"
+                        className="flex items-center gap-2"
                     >
                         <input
                             type="text"
                             value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                            placeholder="Write a comment..."
+                            onChange={event => setCommentText(event.target.value)}
+                            placeholder="Write a thoughtful comment..."
                             maxLength={1000}
-                            className="box-border min-w-0 flex-1 rounded-xl border border-white/[0.08] bg-[#0b0b10] px-3 py-3 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-violet-400/40 sm:px-4"
+                            className="min-w-0 flex-1 rounded-lg border border-[#e4d9cb] bg-white px-4 py-3 text-sm text-[#40372e] outline-none placeholder:text-[#ad9d8d] focus:border-[#a45b37]"
                         />
 
                         <button
                             type="submit"
                             disabled={!commentText.trim() || commentSubmitting}
                             aria-label="Send comment"
-                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300 transition hover:bg-violet-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#a45b37] text-white transition hover:bg-[#87472b] disabled:opacity-40"
                         >
                             {commentSubmitting ? (
                                 <LoaderCircle size={18} className="animate-spin" />
@@ -369,80 +365,69 @@ function PostCard({
                     </form>
 
                     {commentError && (
-                        <p role="alert" className="mt-3 break-words text-sm text-red-400">
+                        <p role="alert" className="mt-3 text-sm text-red-600">
                             {commentError}
                         </p>
                     )}
 
                     {commentsLoading ? (
-                        <div className="mt-5 flex items-center gap-2 text-sm text-zinc-400">
+                        <div className="mt-5 flex items-center gap-2 text-sm text-[#917e6d]">
                             <LoaderCircle size={16} className="animate-spin" />
                             Loading comments...
                         </div>
                     ) : comments.length === 0 ? (
                         !commentError && (
-                            <p className="mt-4 text-sm text-zinc-500">
+                            <p className="mt-4 text-sm text-[#998777]">
                                 No comments yet. Be the first!
                             </p>
                         )
                     ) : (
-                        <div className="mt-5 min-w-0 space-y-4">
-                            {comments.map((comment) => {
+                        <div className="mt-5 space-y-4">
+                            {comments.map(comment => {
                                 const commentUser = comment.user;
-                                const commentUserId =
-                                    commentUser?._id || commentUser;
-
+                                const commentUserId = commentUser?._id || commentUser;
                                 const isCommentAuthor =
                                     String(commentUserId) === String(currentUserId);
-
                                 const commentUsername =
-                                    commentUser?.username ||
-                                    commentUser?.name ||
-                                    "User";
-
-                                const commentImage = getImageUrl(
-                                    commentUser?.profilepic
-                                );
+                                    commentUser?.username || commentUser?.name || "User";
+                                const commentImage = getImageUrl(commentUser?.profilepic);
 
                                 return (
                                     <div
                                         key={comment._id}
-                                        className="flex min-w-0 items-start gap-2.5 sm:gap-3"
+                                        className="flex items-start gap-3"
                                     >
                                         <button
                                             type="button"
                                             onClick={() => openProfile(commentUser?.username)}
                                             aria-label={`Open ${commentUsername}'s profile`}
-                                            className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/[0.06] bg-zinc-800"
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e9ded1]"
                                         >
                                             {commentImage ? (
                                                 <img
                                                     src={commentImage}
                                                     alt={commentUsername}
                                                     className="h-full w-full object-cover"
-                                                    onError={(e) => {
-                                                        e.currentTarget.style.display = "none";
-                                                    }}
                                                 />
                                             ) : (
-                                                <UserRound size={17} className="text-zinc-400" />
+                                                <UserRound size={17} className="text-[#927762]" />
                                             )}
                                         </button>
 
-                                        <div className="box-border min-w-0 flex-1 rounded-xl bg-white/[0.025] px-3 py-3">
+                                        <div className="min-w-0 flex-1 rounded-lg bg-[#f3ede4] px-4 py-3">
                                             <button
                                                 type="button"
                                                 onClick={() => openProfile(commentUser?.username)}
-                                                className="break-words text-left text-sm font-medium text-zinc-200 hover:text-violet-300"
+                                                className="text-sm font-semibold text-[#514438] hover:text-[#a45b37]"
                                             >
                                                 {commentUsername}
                                             </button>
 
-                                            <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-5 text-zinc-400 [overflow-wrap:anywhere]">
+                                            <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-[#716356]">
                                                 {comment.content}
                                             </p>
 
-                                            <p className="mt-2 break-words text-xs text-zinc-600">
+                                            <p className="mt-2 text-xs text-[#a49484]">
                                                 {comment.date
                                                     ? new Date(comment.date).toLocaleString()
                                                     : ""}
@@ -453,7 +438,7 @@ function PostCard({
                                                     type="button"
                                                     onClick={() => handleDeleteComment(comment._id)}
                                                     disabled={deletingCommentId === comment._id}
-                                                    className="mt-2 flex items-center gap-1.5 text-xs text-zinc-500 transition hover:text-red-400 disabled:opacity-50"
+                                                    className="mt-2 flex items-center gap-1.5 text-xs text-[#998777] transition hover:text-red-600 disabled:opacity-50"
                                                 >
                                                     {deletingCommentId === comment._id ? (
                                                         <LoaderCircle size={13} className="animate-spin" />

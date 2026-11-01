@@ -116,6 +116,9 @@ function Home() {
                                 <PostCard
                                     key={post._id}
                                     postId={post._id}
+                                    title={post.title || "Untitled article"}
+                                    category={post.category || "Personal"}
+                                    date={post.date}
                                     username={
                                         post.user?.username ||
                                         post.user?.name ||
